@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>deltarooms</title>
+</head>
+<body>
+
+<h1>deltarooms</h1>
+<p>note: this does not include "PLACE_" files</p>
+
+<select id="chapterSelect" aria-label="Select chapter">
+  <option value="chapter1">chapter 1</option>
+  <option value="chapter2">chapter 2</option>
+  <option value="chapter3">chapter 3</option>
+  <option value="chapter4">chapter 4</option>
+</select>
+
+<div id="tableContainer" aria-live="polite"></div>
+
+<script>
+  const container = document.getElementById('tableContainer');
+  const select = document.getElementById('chapterSelect');
+
+  select.addEventListener('change', loadChapter);
+
+  function loadChapter() {
+    const chapter = select.value;
+    const csvFile = chapter + '_output.csv';
+
+    fetch(csvFile)
+      .then(res => {
+        if (!res.ok) throw new Error('CSV not found: ' + csvFile);
+        return res.text();
+      })
+      .then(csv => {
+        const rows = csv.trim().split('\n').map(row => {
+          // Simple CSV split by comma
+          const cols = row.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g);
+          return cols ? cols.map(c => c.replace(/^"|"$/g, '')) : [];
+        });
+        renderTable(rows.slice(1), chapter);
+      })
+      .catch(e => {
+        container.innerHTML = '<p style="color:red;">' + e.message + '</p>';
+      });
+  }
+
+  function renderTable(rows, chapter) {
+    container.innerHTML = '';
+
+    const filtered = rows.filter(r => {
+      const name = r[2] ? r[2].trim().toLowerCase() : '';
+      return name !== 'n/a' && name !== '';
+    });
+
+    if (!filtered.length) {
+      container.textContent = 'No rooms to display.';
+      return;
+    }
+
+    const table = document.createElement('table');
+
+    // Header row
+    const header = document.createElement('tr');
+    ['image', 'name', 'index', 'id'].forEach(text => {
+      const th = document.createElement('th');
+      th.textContent = text;
+      header.appendChild(th);
+    });
+    table.appendChild(header);
+
+    filtered.forEach(([input, computed, name]) => {
+      const row = document.createElement('tr');
+
+      // Image cell
+      const imgCell = document.createElement('td');
+      const img = document.createElement('img');
+      img.src = chapter + '/' + name + '.png';
+      img.alt = 'Image of ' + name;
+      img.onerror = function() { this.onerror=null; this.src='placeholder.png'; };
+      img.width = 80;
+      imgCell.appendChild(img);
+      row.appendChild(imgCell);
+
+      // Name cell
+      const nameCell = document.createElement('td');
+      nameCell.textContent = name;
+      row.appendChild(nameCell);
+
+      // Input cell
+      const inputCell = document.createElement('td');
+      inputCell.textContent = input;
+      row.appendChild(inputCell);
+
+      // Computed cell
+      const computedCell = document.createElement('td');
+      computedCell.textContent = computed;
+      row.appendChild(computedCell);
+
+      table.appendChild(row);
+    });
+
+    container.appendChild(table);
+  }
+
+  loadChapter();
+</script>
+
+</body>
+</html>
