@@ -7,7 +7,7 @@
 <body>
 
 <h1>deltarooms</h1>
-  <p>idk how gamemaker works man this is just based on <code>gml_GlobalScript_scr_get_room_by_id</code> in each chapter</p>
+  <p>idk how gamemaker works man this is just based on <code>gml_GlobalScript_scr_get_room_by_id</code> in each chapter. actual room ids should be good but idk how indexes work besides the array in that script</p>
 
 <select id="chapterSelect" aria-label="Select chapter">
   <option value="chapter1">chapter 1</option>
@@ -64,7 +64,7 @@
 
     // Header row
     const header = document.createElement('tr');
-    ['image', 'name', 'index', 'id'].forEach(text => {
+    ['image', 'name', 'id', 'index'].forEach(text => {
       const th = document.createElement('th');
       th.textContent = text;
       header.appendChild(th);
